@@ -1,4 +1,4 @@
-"""Isolated project packages for the artifact viewer.
+"""Framework-neutral isolated project packages.
 
 The current artifacts directory remains the legacy project.  Additional
 projects live below ``.projects/<project-id>`` so the existing EDA surface can
@@ -21,7 +21,6 @@ import zipfile
 from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
 from typing import Literal
-from urllib.parse import quote
 
 from .planfile import load_project_plan
 
@@ -324,7 +323,6 @@ class ProjectPackageStore:
             "categories": categories,
             "fingerprint_sha256": self.fingerprint(project_id),
             "content_fingerprint_sha256": self.content_fingerprint(project_id),
-            "url": "/" if project_id == self.legacy_id else f"/projects/{project_id}",
         }
 
     def list_projects(self) -> list[dict[str, object]]:
@@ -354,10 +352,6 @@ class ProjectPackageStore:
                 "category": classify_path(relative),
                 "bytes": path.stat().st_size,
                 "sha256": _sha256_file(path),
-                "download_url": (
-                    f"/api/projects/{project_id}/files/"
-                    f"{quote(relative.as_posix(), safe='/')}"
-                ),
             }
             for path, relative in self._iter_files(project_id)
         ]
@@ -396,7 +390,6 @@ class ProjectPackageStore:
                 or not candidate.is_file()
             ):
                 continue
-            encoded = quote(relative.as_posix(), safe="/")
             proposals.append(
                 {
                     "revision_id": manifest.get("revision_id"),
@@ -407,11 +400,6 @@ class ProjectPackageStore:
                     "source_path": source.get("path"),
                     "new_source": source.get("exists") is False,
                     "created_at": manifest.get("created_at"),
-                    "preview_url": (
-                        f"/export/eda-candidates/{encoded}?fmt=png&download=false"
-                    ),
-                    "raw_url": f"/raw/eda-candidates/{encoded}",
-                    "review_url": f"/view/eda-candidates/{encoded}?tab=candidate",
                     "validation": manifest.get("validation", {}),
                 }
             )

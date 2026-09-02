@@ -8,7 +8,7 @@ from typing import Any
 
 import yaml
 
-SCHEMA_ID = "artifact-viewer.project-plan/v1"
+SCHEMA_ID = "twin-projects.project-plan/v1"
 PLANFILE_PATHS = (
     Path("planfile.yaml"),
     Path("planfile.yml"),
@@ -297,7 +297,6 @@ def load_project_plan(project_root: Path, project_id: str) -> dict[str, object]:
         "source": {
             "path": relative,
             "sha256": _sha256(source),
-            "url": f"/api/projects/{project_id}/files/{relative}",
         },
         "progress_percent": progress,
         "counts": counts,
