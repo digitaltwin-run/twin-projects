@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wellmanifest.dev/schemas/project-package.schema.v1.json",
+  "title": "Wellmanifest project package",
+  "type": "object",
+  "required": [
+    "schema_id",
+    "schema_version",
+    "project_id",
+    "name",
+    "kind",
+    "root_mode",
+    "source",
+    "layout",
+    "merge_history"
+  ],
+  "properties": {
+    "schema_id": {"const": "wellmanifest.project-package/v1"},
+    "schema_version": {"const": "1.0.0"},
+    "project_id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$", "maxLength": 80},
+    "name": {"type": "string", "minLength": 1, "maxLength": 120},
+    "kind": {"enum": ["mixed", "electronics", "software", "mechanical"]},
+    "root_mode": {"enum": ["legacy", "managed"]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "updated_at": {"type": "string", "format": "date-time"},
+    "source": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {"type": {"enum": ["adopted", "created", "clone", "zip"]}},
+      "additionalProperties": true
+    },
+    "license": {
+      "type": "object",
+      "required": ["spdx", "file"],
+      "properties": {
+        "spdx": {"const": "Apache-2.0"},
+        "file": {"const": "LICENSE"}
+      },
+      "additionalProperties": false
+    },
+    "layout": {
+      "type": "object",
+      "required": ["pcb", "cad", "firmware", "software", "docs", "assets", "misc"],
+      "additionalProperties": {"type": "string", "minLength": 1}
+    },
+    "merge_history": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "required": ["at", "source_project_id", "source_fingerprint_sha256", "plan_sha256", "conflict_strategy"],
+        "properties": {
+          "at": {"type": "string", "format": "date-time"},
+          "source_project_id": {"type": "string"},
+          "source_fingerprint_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "conflict_strategy": {"enum": ["reject", "keep_both"]}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": true
+}
