@@ -171,9 +171,19 @@ def _is_transient(relative: PurePosixPath) -> bool:
 
 
 class ProjectPackageStore:
-    def __init__(self, artifacts_root: Path) -> None:
+    def __init__(
+        self,
+        artifacts_root: Path,
+        *,
+        candidates_root: Path | None = None,
+    ) -> None:
         self.root = artifacts_root.expanduser().resolve()
         self.managed_root = self.root / MANAGED_RELATIVE
+        self.candidates_root = (
+            candidates_root.expanduser().resolve()
+            if candidates_root is not None
+            else (self.root / "eda-candidates").resolve()
+        )
 
     def _legacy_manifest(self) -> dict[str, object]:
         path = self.root / MANIFEST_RELATIVE
@@ -359,7 +369,7 @@ class ProjectPackageStore:
     def eda_candidates(self, project_id: str) -> list[dict[str, object]]:
         """List immutable EDA proposals without adding them to the project ZIP."""
         self.project_root(project_id)
-        candidates_root = (self.root / "eda-candidates").resolve()
+        candidates_root = self.candidates_root
         if not candidates_root.is_dir():
             return []
         proposals: list[dict[str, object]] = []

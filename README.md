@@ -33,6 +33,11 @@ Runtime journals, caches, candidate revisions, and other machine-local state
 are excluded from portable exports. KiCad writes remain the responsibility of
 TwinStudio's candidate/review/promotion workflow.
 
+`ProjectPackageStore(..., candidates_root=...)` lets the owning service keep
+candidate revisions in a separate runtime volume while still exposing them in
+workspace details. If omitted, it retains the compatible
+`<artifacts-root>/eda-candidates` default.
+
 ## Dependency direction
 
 ```text

@@ -102,6 +102,50 @@ def test_upload_never_overwrites_kicad_source(tmp_path: Path) -> None:
     assert raised.value.code == "PROJECT_EDA_CANDIDATE_REQUIRED"
 
 
+def test_candidates_can_live_in_an_external_runtime_store(tmp_path: Path) -> None:
+    store = store_at(tmp_path)
+    store.create("Elektronika")
+    candidates_root = tmp_path / "runtime" / "kicad-edits"
+    candidate_dir = candidates_root / "bootstrap" / "pcb"
+    candidate_dir.mkdir(parents=True)
+    candidate = candidate_dir / "main.kicad_sch"
+    candidate.write_text("(kicad_sch)\n", encoding="utf-8")
+    (candidate_dir / "change.json").write_text(
+        json.dumps(
+            {
+                "project_id": "elektronika",
+                "revision_id": "rev:bootstrap",
+                "candidate_path": "bootstrap/pcb/main.kicad_sch",
+                "source": {
+                    "path": ".projects/elektronika/pcb/main.kicad_sch",
+                    "exists": False,
+                },
+                "validation": {"status": "not_run"},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    external = ProjectPackageStore(store.root, candidates_root=candidates_root)
+
+    assert external.eda_candidates("elektronika") == [
+        {
+            "revision_id": "rev:bootstrap",
+            "path": "bootstrap/pcb/main.kicad_sch",
+            "name": "main.kicad_sch",
+            "bytes": len("(kicad_sch)\n"),
+            "sha256": (
+                "fef5ea64221685b5520313c899e14864"
+                "a1c1028dcdf43926a38e7f6a7a7de50a"
+            ),
+            "source_path": ".projects/elektronika/pcb/main.kicad_sch",
+            "new_source": True,
+            "created_at": None,
+            "validation": {"status": "not_run"},
+        }
+    ]
+
+
 def test_zip_import_rejects_path_escape(tmp_path: Path) -> None:
     output = io.BytesIO()
     with zipfile.ZipFile(output, "w", zipfile.ZIP_DEFLATED) as archive:
